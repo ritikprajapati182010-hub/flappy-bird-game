@@ -9,37 +9,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Extract and fix structure
-        run: |
-          mkdir -p temp_extracted
-          for f in *.zip; do
-            if [ -f "$f" ]; then
-              unzip -q "$f" -d temp_extracted
-            fi
-          done
-          shopt -s dotglob
-          if [ -d "temp_extracted" ]; then
-            # Move files up if they are nested inside a subfolder
-            if [ $(ls -A temp_extracted | wc -l) -eq 1 ]; then
-              SUBDIR=$(ls temp_extracted)
-              mv temp_extracted/$SUBDIR/* . 2>/dev/null || true
-            else
-              mv temp_extracted/* . 2>/dev/null || true
-            fi
-            rm -rf temp_extracted
-          fi
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: Install dependencies
-        run: |
-          if [ -f "package.json" ]; then
-            npm install
-          fi
-
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -49,23 +18,14 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Sync and Build APK
+      - name: Build APK
         run: |
-          if [ ! -d "android" ]; then
-            npx cap add android || true
-          fi
-          npx cap sync || true
-          if [ -d "android" ]; then
-            cd android
-            chmod +x gradlew
-            ./gradlew assembleDebug
-          else
-            echo "Error: Android folder could not be created."
-            exit 1
-          fi
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
-          path: '**/app-debug.apk'
+          path: android/app/build/outputs/apk/debug/app-debug.apk
