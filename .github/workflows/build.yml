@@ -9,6 +9,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Unzip project
+        run: |
+          unzip -q all-files.zip -d .
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -29,4 +33,3 @@ jobs:
         with:
           name: app-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
-          
